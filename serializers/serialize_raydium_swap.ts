@@ -1,40 +1,14 @@
-// import { BN } from 'bn.js'
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
 import axios from 'axios'
 import { FordefiSolanaConfig, RaydiumSwapConfig } from '../raydium_swap'
 import { API_URLS } from '@raydium-io/raydium-sdk-v2'
-import * as web3 from '@solana/web3.js'
-import * as jito from 'jito-ts'
-import { getJitoTipAccount } from '../utils/get_jito_tip_account'
 import { getPriorityFees } from '../utils/get_priority_fees'
 import { PublicKey } from '@solana/web3.js'
 
 
-const connection = new web3.Connection("https://api.mainnet-beta.solana.com")
-
-
-async function createJitoInstructions(fordefiSolanaVaultAddress: string, jitoTip: number): Promise<web3.TransactionInstruction[]> {
-    // Create Jito client instance
-    const client = jito.searcher.searcherClient("frankfurt.mainnet.block-engine.jito.wtf")
-
-    // Get Jito Tip Account
-    const jitoTipAccount = await getJitoTipAccount(client)
-    console.log(`Tip amount -> ${jitoTip}`)
-
-    // Create and return Jito tip instruction
-    return [
-        web3.SystemProgram.transfer({
-            fromPubkey: new web3.PublicKey(fordefiSolanaVaultAddress),
-            toPubkey: jitoTipAccount,
-            lamports: jitoTip,
-        })
-    ];
-}
-
 export async function swapWithRaydium(fordefiConfig: FordefiSolanaConfig, swapConfig: RaydiumSwapConfig){
 
     const fordefiVaultPubKey = new PublicKey(fordefiConfig.fordefiSolanaVaultAddress)
-    const swapInput = swapConfig.swapAmount
     const inputTokenMint = new PublicKey(swapConfig.inputMint)
     console.debug("SwapResponse", swapConfig)
 
