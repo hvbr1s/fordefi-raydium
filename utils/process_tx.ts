@@ -22,12 +22,10 @@ export async function createAndSignTx(
 
     if (respTx.status < 200 || respTx.status >= 300) {
       let errorMessage = `HTTP error occurred: status = ${respTx.status}`;
-      // Attempt to parse the response body for additional error info
       try {
         const errorDetail = respTx.data;
         errorMessage += `\nError details: ${JSON.stringify(errorDetail)}`;
       } catch {
-        // If not JSON, include raw text
         errorMessage += `\nRaw response: ${respTx.data}`;
       }
       throw new Error(errorMessage);
@@ -35,7 +33,6 @@ export async function createAndSignTx(
 
     return respTx;
   } catch (error: any) {
-    // If we have an Axios error with a response, parse it
     if (error.response) {
       let errorMessage = `HTTP error occurred: status = ${error.response.status}`;
       try {
@@ -46,8 +43,6 @@ export async function createAndSignTx(
       }
       throw new Error(errorMessage);
     }
-
-    // Otherwise, it's a network or unknown error
     throw new Error(`Network error occurred: ${error.message ?? error}`);
   }
 };
@@ -82,7 +77,6 @@ export async function get_tx(
 
     return respTx.data;
   } catch (error: any) {
-    // If we have an Axios error with a response, parse it
     if (error.response) {
       let errorMessage = `HTTP error occurred: status = ${error.response.status}`;
       try {
@@ -93,7 +87,6 @@ export async function get_tx(
       }
       throw new Error(errorMessage);
     }
-    // Otherwise, it's a network or unknown error
     throw new Error(`Network error occurred: ${error.message ?? error}`);
   }
 }

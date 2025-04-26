@@ -1,13 +1,11 @@
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
-import axios from 'axios'
 import { FordefiSolanaConfig, RaydiumSwapConfig } from '../raydium_swap'
 import { API_URLS } from '@raydium-io/raydium-sdk-v2'
 import { getPriorityFees } from '../utils/get_priority_fees'
 import { PublicKey } from '@solana/web3.js'
-
+import axios from 'axios'
 
 export async function swapWithRaydium(fordefiConfig: FordefiSolanaConfig, swapConfig: RaydiumSwapConfig){
-
     const fordefiVaultPubKey = new PublicKey(fordefiConfig.fordefiSolanaVaultAddress)
     const inputTokenMint = new PublicKey(swapConfig.inputMint)
     console.debug("SwapResponse", swapConfig)
@@ -43,38 +41,26 @@ export async function swapWithRaydium(fordefiConfig: FordefiSolanaConfig, swapCo
     
       console.log(`total ${allTransactions.length} transactions`, swapTransactions)
 
-    // Serialize the swap tx
-    let serializedTxData;
-    if (isV0Tx) {
-        // For V0 transactions
-        const versionedTx = allTransactions[0] as VersionedTransaction;
-        serializedTxData = Buffer.from(
-            versionedTx.message.serialize()
-        ).toString('base64');
-    } else {
-        // For legacy transactions
-        const legacyTx = allTransactions[0] as Transaction;
-        serializedTxData = Buffer.from(
-            legacyTx.serializeMessage()
-        ).toString('base64');
-    }
+    const serializedTxData = Buffer.from(
+      isV0Tx
+        ? (allTransactions[0] as VersionedTransaction).message.serialize()
+        : (allTransactions[0] as Transaction).serializeMessage()
+    ).toString('base64');
 
     // Create JSON
     const pushMode = swapConfig.useJito ? "manual" : "auto";
     const jsonBody = {
-
         "vault_id": fordefiConfig.vaultId, // Replace with your vault ID
         "signer_type": "api_signer",
-        "sign_mode": "auto", // IMPORTANT
+        "sign_mode": "auto",
         "type": "solana_transaction",
         "details": {
             "type": "solana_serialized_transaction_message",
-            "push_mode": pushMode, // IMPORTANT,
+            "push_mode": pushMode,
             "data": serializedTxData,  // For legacy transactions, use `serializedLegacyMessage`
             "chain": "solana_mainnet"
         },
-        "wait_for_state": "signed" // only for create-and-wait
-        
+        "wait_for_state": "signed" // only for create-and-wait    
     };
 
     return jsonBody;
