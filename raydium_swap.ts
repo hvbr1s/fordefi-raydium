@@ -1,4 +1,5 @@
 import { signWithApiSigner } from './signer';
+import { TxVersion } from '@raydium-io/raydium-sdk-v2'
 import { swapWithRaydium } from './serializers/serialize_raydium_swap'
 import { createAndSignTx } from './utils/process_tx'
 import { pushToJito } from './push_to_jito'
@@ -23,7 +24,7 @@ export interface RaydiumSwapConfig {
   outputMint: string;
   swapAmount: bigint;
   slippage: number;
-  txVersion: string ;
+  txVersion: string;
   useJito: boolean;
   jitoTip: number;
 };
@@ -43,9 +44,9 @@ export const swapConfig: RaydiumSwapConfig = {
   isInputSol: true,
   outputMint: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
   isOutputSol: false,
-  swapAmount: 1_000n, // in lamports
+  swapAmount: 10_000n, // in lamports
   slippage: 1, // in % (1 = 100 pbs)
-  txVersion: "V0",
+  txVersion: 'V0',
   useJito: false, // if true we'll use Jito instead of Fordefi to broadcast the signed transaction
   jitoTip: 1000, // Jito tip amount in lamports (1 SOL = 1e9 lamports)
 };

@@ -1,6 +1,7 @@
 import { signWithApiSigner } from './signer';
 import { Connection } from '@solana/web3.js'
-import { openPositionWithRaydium } from './serializers/serialize_raydium_open_position'
+import { TxVersion } from '@raydium-io/raydium-sdk-v2'
+import { harvestPositionWithRaydium } from './serializers/serialize_raydium_harvest_position'
 import { createAndSignTx } from './utils/process_tx'
 import { pushToJito } from './push_to_jito'
 import dotenv from 'dotenv'
@@ -16,13 +17,10 @@ export interface FordefiSolanaConfig {
   apiPathEndpoint: string;
 };
 
-export interface RaydiumOpenPositionConfig {
+export interface RaydiumHarvestPositionConfig {
   raydiumPool: string;
-  inputAmount: number;
-  startPrice: number;
-  endPrice: number;
-  txVersion: string;
-  cuLimit: number;
+  txVersion: TxVersion;
+  cuLimit: number,
   useJito: boolean;
   jitoTip: number;
 };
@@ -36,15 +34,12 @@ export const fordefiConfig: FordefiSolanaConfig = {
   apiPathEndpoint: '/api/v1/transactions/create-and-wait'
 };
 
-export const openPositionConfig: RaydiumOpenPositionConfig = {
+export const harvestPositionConfig: RaydiumHarvestPositionConfig = {
   raydiumPool: "8sLbNZoA1cfnvMJLPfp98ZLAnFSYCFApfJKMbiXNLwxj", // SOL/USDC pool
-  inputAmount: 0.001,   // (SOL)
-  startPrice: 151.74,   // (USDC per SOL)
-  endPrice: 151.80,     // (USDC per SOL)
-  txVersion: "V0",
+  txVersion: TxVersion.V0,
   cuLimit: 700_000,
   useJito: false, // if true we'll use Jito instead of Fordefi to broadcast the signed transaction
-  jitoTip: 1000, // Jito tip amount in lamports (0.000001 SOL)
+  jitoTip: 1000, // Jito tip amount in lamports (1 SOL = 1e9 lamports)
 };
 
 export const connection = new Connection('https://api.mainnet-beta.solana.com')
@@ -55,7 +50,7 @@ async function main(): Promise<void> {
     return;
   }
   // We create the tx
-  const jsonBody = await openPositionWithRaydium(fordefiConfig, openPositionConfig, connection)
+  const jsonBody = await harvestPositionWithRaydium(fordefiConfig, harvestPositionConfig, connection)
   console.log("JSON request: ", jsonBody)
 
   // Fetch serialized tx from json file
@@ -74,7 +69,7 @@ async function main(): Promise<void> {
     const data = response.data;
     console.log(data)
 
-    if(openPositionConfig.useJito){
+    if(harvestPositionConfig.useJito){
       try {
         const transaction_id = data.id
         console.log(`Transaction ID -> ${transaction_id}`)
